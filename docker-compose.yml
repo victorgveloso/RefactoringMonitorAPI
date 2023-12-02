@@ -1,0 +1,41 @@
+version: '3'
+services:
+  webapp:
+    build:
+      context: RefactoringMinerWebApp
+      dockerfile: Dockerfile
+    ports:
+      - 4000:4000
+    depends_on:
+      - php
+    restart: unless-stopped
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/var/www/html
+    ports:
+      - 8080:80
+    depends_on:
+      - mysql
+    restart: unless-stopped
+  mysql:
+    image: mysql:5-oracle
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: refactoring
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+      - mysql_data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    restart: unless-stopped
+volumes:
+  mysql_data:
