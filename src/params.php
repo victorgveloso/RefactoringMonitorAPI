@@ -632,17 +632,18 @@ class SendEmail extends Parameter {
             $q = "";
             if (isset($_REQUEST["revision"])) {
                 $revisionID = urldecode($_REQUEST["revision"]);
-                $q = "INSERT INTO surveymail(`alternativeAddress`, `body`, `recipient`, `sentDate`, `sender`, `subject`, `revision`)
-                                    VALUES('', '$emailBody', '$authorEmail', NOW(), '$userEmail', '$subject', $revisionID)";
+                $q = "INSERT INTO surveymail(`alternativeAddress`, `body`, `recipient`, `sentDate`, `sender`, `subject`, `revision`, `addedAt`)
+                                    VALUES('', '$emailBody', '$authorEmail', NOW(), '$userEmail', '$subject', $revisionID, NOW())";
             }
             else {
-            $q = "INSERT INTO surveymail(`alternativeAddress`, `body`, `recipient`, `sentDate`, `sender`, `subject`)
-                                VALUES('', '$emailBody', '$authorEmail', NOW(), '$userEmail', '$subject')";
+            $q = "INSERT INTO surveymail(`alternativeAddress`, `body`, `recipient`, `sentDate`, `sender`, `subject`, `addedAt`)
+                                VALUES('', '$emailBody', '$authorEmail', NOW(), '$userEmail', '$subject', NOW())";
             }
             $this->updateSameProjectOlderCommitStatus($this->connection, $commitID, $projectID);
             $this->updateSameAuthorCommitStatus($this->connection, $commitID, $authorEmail);
             $this->updateThisCommitStatus($this->connection, $commitID);
-            return updateQuery($this->connection, $q);
+            echo(updateQuery($this->connection, $q));
+            return;
         }
 
         echo('{"status":"ERROR"}');
