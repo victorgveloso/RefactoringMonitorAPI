@@ -187,7 +187,7 @@ class EmailedRefactorings extends Refactorings {
         $projectRows = array();
         foreach ($refactoringRowsAll as $refactoringRowsAllKey => $refactoringRows) {
             foreach ($refactoringRows as $key => $refactoringRow) {
-                $projectID = $refactoringRow["projectID"];
+                $projectID = $refactoringRow["project"];
                 if (!isset($projectRows[$projectID])) {
                     $allProjectsRows = getProjectRows($this->connection, $projectID);
                     $projectRows[$projectID] = $allProjectsRows[0];
