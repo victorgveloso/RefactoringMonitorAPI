@@ -112,7 +112,7 @@ class Refactorings extends Parameter {
         }
     
     
-        $q = "SELECT    r.id AS refactoringId, tag.*, r.refactoringType, r.description, rg.status,
+        $q = "SELECT    r.id AS refactoringId, tag.*, r.refactoringType, r.description, rg.status, r.description AS refactoringString,
                         rg.id AS commitRowId, rg.commitId, rg.authorEmail, rg.authorName, rg.FullMessage, rg.project, 
                         rg.commitTime, EXISTS(SELECT cr.id FROM coderangegit cr WHERE cr.refactoring = r.id AND (cr.filePath LIKE '%Test.java' OR cr.filePath LIKE '%/test/%')) AS isTestRefactoring
                         $extraColumns
