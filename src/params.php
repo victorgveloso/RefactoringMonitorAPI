@@ -231,7 +231,7 @@ class MonitorProject extends Parameter {
     protected function do() {
         $user = getUser($_REQUEST["jwt"]);
 
-        if ($user->role == "ADMIN") {
+        if (strtoupper($user->role) == "ADMIN") {
 
             $projectID = mysqli_real_escape_string($this->connection, $_REQUEST["projectID"]);
             $shouldMonitor = $_REQUEST["shouldMonitor"] == 'true' ? 1 : 0;
