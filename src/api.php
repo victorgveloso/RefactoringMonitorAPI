@@ -8,7 +8,8 @@
     require_once 'sql.php';
     require_once 'params.php';
     ini_set('memory_limit', '1024M');
-    $globalConnection = new mysqli("mysql", "myuser", "mypassword", "refactoring");
+    $DATABASE_NAME = getenv('MYSQL_DATABASE') ?: 'refactoring';
+    $globalConnection = new mysqli("mysql", "myuser", "mypassword", $DATABASE_NAME);
     //$connection = new mysqli("db-user-public-my51.encs.concordia.ca", "refactor_admin", "dud4M8G$6y54", "refactoring");
     //$connection = new mysqli("127.0.0.1", "davood", "123456", "lambda-study");
 
