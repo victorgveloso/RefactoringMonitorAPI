@@ -110,7 +110,8 @@ class Refactorings extends Parameter {
                     array_push($whereClauses, "sm.sender != '$userEmail'");
                     break;
             }
-            $extraColumns = ", sm.*";
+            $extraColumns = ", COUNT(resp.id) > 0 AS responded , sm.*";
+            $extraClauses = "GROUP BY r.id" . $extraClauses;
         }
 
         if (count($whereClauses) > 0) {
@@ -130,6 +131,7 @@ class Refactorings extends Parameter {
             LEFT OUTER JOIN refactoringmotivation rm ON rm.refactoring = r.id
             LEFT OUTER JOIN tag ON tag.id = rm.tag
             LEFT OUTER JOIN surveymail sm ON sm.revision = rg.id
+            LEFT OUTER JOIN surveyresponse resp ON resp.survey = sm.id 
             $whereClause
             $extraClauses";
         $refactoringRows = getQueryRows($connection, $q);
