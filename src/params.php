@@ -282,8 +282,9 @@ class AllTags extends Parameter {
         $user = getUser($_REQUEST["jwt"]);
         $userID = $user->userID;
         $q = "SELECT DISTINCT label FROM tag
-                INNER JOIN lambda_tags ON tag.id = lambda_tags.tag
-                WHERE lambda_tags.user = $userID";
+                LEFT OUTER JOIN lambda_tags ON tag.id = lambda_tags.tag
+                LEFT OUTER JOIN refactoringmotivation ON tag.id = refactoringmotivation.tag
+                WHERE lambda_tags.user = $userID OR lambda_tags.user IS NULL";
         echo(selectQuery($this->connection, $q));
     }
     protected function name() : string {
