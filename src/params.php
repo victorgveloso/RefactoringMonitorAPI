@@ -667,6 +667,36 @@ class SendEmail extends Parameter {
         return "sendEmail";
     }    
 }
+class AddResponseRefactoring extends Parameter {
+    protected function do() {
+        $user = getUser($_REQUEST["jwt"]);
+
+        $emailBody = urldecode($_REQUEST["body"]);
+        $emailBody = str_replace("\\\"", "\"", $emailBody);
+        $emailBody = str_replace("\\'", "'", $emailBody);
+
+        $userEmail = mysqli_real_escape_string($this->connection, $user->email);
+        $revisionID = mysqli_real_escape_string($this->connection, urldecode($_REQUEST["revision"]));
+        $authorEmail = mysqli_real_escape_string($this->connection, urldecode($_REQUEST["fromEmail"]));
+        $emailBody = mysqli_real_escape_string($this->connection, $emailBody);
+        $subject = mysqli_real_escape_string($this->connection, urldecode($_REQUEST["subject"]));
+        $refactoringID = mysqli_real_escape_string($this->connection, urldecode($_REQUEST["refactoring"]));
+
+        $q = "SELECT id FROM surveymail WHERE surveymail.revision = $revisionID AND surveymail.recipient = '$authorEmail'";
+
+        $emailIDRows = getQueryRows($this->connection, $q);
+
+        $emailID = $emailIDRows[0]["id"];
+
+        $q = "INSERT INTO surveyresponse(`addedAt`,`sentDate`,`bodyHtml`,`bodyPlain`,`fromAddress`,`subject`,`survey`)
+                    VALUES(NOW(), NOW(), '$emailBody', '$emailBody', '$authorEmail', '$subject', '$emailID')";
+        
+        echo(updateQuery($this->connection, $q));
+    }
+    protected function name() : string {
+        return "addRefactoringResponse";
+    }
+}
 class AddResponse extends Parameter {
     protected function do() {
         $user = getUser($_REQUEST["jwt"]);
