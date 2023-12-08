@@ -305,8 +305,7 @@ class TagsFor extends Parameter {
     }
 }
 class SetTag extends Parameter {
-    protected function do() {
-        $user = getUser($_REQUEST["jwt"]);
+    private function tagLambda() {
         $lambdaID = mysqli_real_escape_string($this->connection, $_REQUEST["lambdaID"]);
         $tag = str_replace("\\'", "'", urldecode($_REQUEST["tag"]));
         $tag = mysqli_real_escape_string($this->connection, $tag);
@@ -339,6 +338,50 @@ class SetTag extends Parameter {
                     AND lambda_tags.lambda = $lambdaID";
             echo(updateQuery($this->connection, $q));
         }
+    }
+    private function tagRefactoring() {
+        $refactoringID = mysqli_real_escape_string($this->connection, $_REQUEST["refactoring"]);
+        $tag = str_replace("\\'", "'", urldecode($_REQUEST["tag"]));
+        $tag = mysqli_real_escape_string($this->connection, $tag);
+        $mode = $_REQUEST["mode"];
+
+        if ($mode == "add") {
+            $q = "SELECT id FROM tag WHERE tag.label = '$tag'";
+            $tagIDRows = getQueryRows($this->connection, $q);
+            if (count($tagIDRows) == 1) {
+                $tagID = $tagIDRows[0]["id"];
+            } else {
+                $q = "INSERT INTO tag(label) VALUES('$tag')";
+                if (updateQuery($this->connection, $q) == '{"status": "OK"}') {
+                    $tagID = $this->connection->insert_id;
+                } else {
+                    $tagID = -1;
+                }
+            }
+            if (isset($tagID) && $tagID > 0) {
+                $q = "INSERT INTO refactoringmotivation(tag, refactoring) VALUES($tagID, $refactoringID)";
+                echo(updateQuery($this->connection, $q));
+            }
+
+        } elseif ($mode == "remove") {
+            $q = "DELETE FROM refactoringmotivation 
+                    WHERE refactoringmotivation.tag = 
+                    (SELECT id FROM tag WHERE tag.label = '$tag')
+                    AND refactoringmotivation.user = $user->userID
+                    AND refactoringmotivation.refactoring = $refactoringID";
+            echo(updateQuery($this->connection, $q));
+        }
+    }
+    protected function do() {
+        $user = getUser($_REQUEST["jwt"]);
+        if (isset($_REQUEST["lambdaID"])) {
+            $this->tagLambda();
+        } elseif (isset($_REQUEST["refactoring"])) {
+            $this->tagRefactoring();
+        } else {
+            echo('{"status":"ERROR", "message": "No lambda or refactoring ID provided."}');
+        }
+        
     }
     protected function name() : string {
         return "setTag";
