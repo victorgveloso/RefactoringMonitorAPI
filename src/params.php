@@ -571,12 +571,12 @@ class GetEmailTemplate extends Parameter {
 class SendEmail extends Parameter {
     private function updateSameAuthorCommitStatus($connection, $commitID, $authorEmail) {
         $q = "UPDATE revisiongit SET status = 'AUTHOR_CONTACTED'
-                WHERE revisiongit.authorEmail = '$authorEmail'";
+                WHERE revisiongit.authorEmail = '$authorEmail' AND revisiongit.status IN ('NEW', 'SEEN')";
         return updateQuery($connection, $q);
     }
     private function updateSameProjectOlderCommitStatus($connection, $commitID, $projectID) {
         $q = "UPDATE revisiongit SET status = 'SEEN'
-              WHERE revisiongit.project = $projectID AND revisiongit.id  < $commitID";
+              WHERE revisiongit.project = $projectID AND revisiongit.id  < $commitID AND revisiongit.status = 'NEW'";
         return updateQuery($connection, $q);
     }
     private function updateThisCommitStatus($connection, $commitID) {
