@@ -796,7 +796,7 @@ class Login extends Parameter {
     
             $jwt = \Firebase\JWT\JWT::encode($data, $secretKey, 'HS512');
                 
-            $unencodedArray = array('jwt' => $jwt);
+            $unencodedArray = array('jwt' => $jwt, 't' => $tokenId);
             echo json_encode($unencodedArray);
     
         } else {
