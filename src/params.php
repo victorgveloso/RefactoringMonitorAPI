@@ -141,9 +141,8 @@ class Refactorings extends Parameter {
     
             $refactoringRows[0]["numberOfContributions"] = getCommitRefactoringsCount($connection, $projectID, $authorEmail, "");
     
-            $q = "SELECT r.id AS refactoringId, tag.*, rm.refactoringType, rm.description, rg.commitId, rg.authorEmail, rg.authorName, rg.FullMessage, rg.project, rg.commitTime
+            $q = "SELECT tag.*
                 FROM refactoringgit r
-                LEFT OUTER JOIN revisiongit rg  ON rg.id = r.revision
                 LEFT OUTER JOIN refactoringmotivation rm ON rm.refactoring = r.id
                 LEFT OUTER JOIN tag ON tag.id = rm.tag
                 WHERE r.id = $refactoringID";
