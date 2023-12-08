@@ -63,10 +63,19 @@ class CodeRange extends Parameter {
     }
 }
 class Refactorings extends Parameter {
-    protected function getRefactoringRows($connection, $projectID, $refactoringID, $emailingRule, $refactoringType = "", $testRefactoringOnly = false) {
+    protected function getRefactoringRows($connection, $projectID, $refactoringID, $emailingRule, $refactoringType = "", $testRefactoringOnly = false, $limit = null, $offset = null) {
         $whereClauses = array();
         $whereClause = "";
         $extraColumns = "";
+        $extraClauses = "";
+
+        if (!(is_null($limit) && is_null($offset))) {
+            $offset = $offset == null ? 0 : $offset;
+            $limit = $limit == null ? 100 : $limit;
+            $extraClauses = "ORDER BY r.id ASC
+                            LIMIT $limit
+                            OFFSET $offset";
+        }
 
         if ($refactoringType != "") {
             array_push($whereClauses, "r.refactoringType = '$refactoringType'");
@@ -121,7 +130,8 @@ class Refactorings extends Parameter {
             LEFT OUTER JOIN refactoringmotivation rm ON rm.refactoring = r.id
             LEFT OUTER JOIN tag ON tag.id = rm.tag
             LEFT OUTER JOIN surveymail sm ON sm.revision = rg.id
-            $whereClause";
+            $whereClause
+            $extraClauses";
         $refactoringRows = getQueryRows($connection, $q);
     
         if ($refactoringID != "") {
@@ -147,12 +157,15 @@ class Refactorings extends Parameter {
             $refactoringID = $_REQUEST["refactoringID"];
         }
 
+        $limit = isset($_REQUEST["limit"]) ? $_REQUEST["limit"] : null;
+        $offset = isset($_REQUEST["offset"]) ? $_REQUEST["offset"] : null;
+
         $projectID = $_REQUEST["projectID"];
 
         $refactoringType = $_REQUEST["refactoringType"];
         $testRefactoringOnly = $_REQUEST["testRefactoringOnly"];
 
-        $refactoringRows = $this->getRefactoringRows($this->connection, $projectID, $refactoringID, 'AllRefactorings', $refactoringType, $testRefactoringOnly);
+        $refactoringRows = $this->getRefactoringRows($this->connection, $projectID, $refactoringID, 'AllRefactorings', $refactoringType, $testRefactoringOnly, $limit, $offset);
         
         echo (json_encode($refactoringRows));
     }
