@@ -708,6 +708,14 @@ class GetEmails  extends Parameter {
                     WHERE lambdastable_surveymail.lambdastable_id = $lambdaID
                     ORDER BY surveymail.sentDate";
 
+        } elseif (isset($_REQUEST["refactoring"])) {
+            $email = mysqli_real_escape_string($this->connection, urldecode($_REQUEST["email"]));
+            $refactoringID = $_REQUEST["refactoring"];
+            $q = "  SELECT r.id AS refactoringId, sm.*, sr.id AS responseId, sr.bodyHtml, sr.subject AS responseSubject, sr.sentDate AS responseSentDate
+                    FROM refactoringgit r 
+                    INNER JOIN surveymail sm ON sm.revision = r.revision 
+                    LEFT OUTER JOIN surveyresponse sr ON sr.survey = sm.id 
+                    WHERE r.id = $refactoringID";
         } elseif (isset($_REQUEST["email"])) {
             $email = mysqli_real_escape_string($this->connection, urldecode($_REQUEST["email"]));
              $q = "SELECT surveymail.*, lambdastable_surveymail.lambdastable_id,
