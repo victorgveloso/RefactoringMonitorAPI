@@ -49,7 +49,8 @@ class CodeRange extends Parameter {
     protected function do() {
         $refactoringID = $_REQUEST["refactoringID"];
     
-        $q = "SELECT r.id AS refactoringId, r.description AS refactoringDescription, r.refactoringType, cr.*, rg.commitId, pg.cloneUrl
+        $q = "SELECT r.id AS refactoringId, r.description AS refactoringDescription, r.refactoringType, cr.*, rg.commitId, pg.cloneUrl,
+                    CONCAT(LEFT(pg.cloneUrl, LENGTH(pg.cloneUrl)-4),'/commit/',rg.commitId, '#diff-', SHA2(cr.filePath,256), 'R', cr.startLine, '-R', cr.endLine) AS refactoringLink
             FROM refactoringgit r
             LEFT OUTER JOIN revisiongit rg  ON rg.id = r.revision
             LEFT OUTER JOIN projectgit pg  ON pg.id = rg.project
