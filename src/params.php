@@ -391,7 +391,7 @@ class SetTag extends Parameter {
 }
 class GetEmailTemplateRefactoring extends Parameter {
 
-    private function getEmailBody($templateVars) {
+    private function getEmailBody($templateVars, $target="a specific test") {
         $authorName = $templateVars["authorName"];
         $projectName = $templateVars["projectName"];
         $numberOfContributions = $templateVars["numberOfContributions"];
@@ -407,7 +407,7 @@ class GetEmailTemplateRefactoring extends Parameter {
 
         <p>We found <b>$numberOfContributions</b> commits where you refactored test code in project <b>$projectName</b>. 
         Therefore, we consider you an expert on test refactoring, and we would like to ask you the 
-            following questions for a specific test you recently refactored and can be inspected in 
+            following questions about $target you recently refactored and can be inspected in 
             <a href="$commitUrl" target="_blank">$commitUrl</a>:
         </p>
 
@@ -435,21 +435,13 @@ class GetEmailTemplateRefactoring extends Parameter {
     protected function do() {
         $user = getUser($_REQUEST["jwt"]);
         $refactoringID = mysqli_real_escape_string($this->connection, urldecode($_REQUEST["refactoringID"]));
-
-        $q = "SELECT 
-                    c.authorName, c.authorEmail,
-                    c.project AS projectID,
-                    p.name AS projectName,
-                    CONVERT(
-                        CONCAT(
-                            REPLACE(p.cloneUrl,'.git', ''),
-                            '/commit/',
-                            c.commitId)
-                        USING UTF8) AS refactoringDiffLink
-                FROM refactoringgit r
-                INNER JOIN revisiongit c ON r.revision = c.id
-                INNER JOIN projectgit p ON p.id = c.project
-                WHERE r.id = $refactoringID";
+        $q = "SELECT r.authorName, r.authorEmail, r.project AS projectID, p.name AS projectName, 
+        CONCAT(LEFT(p.cloneUrl, LENGTH(p.cloneUrl)-4),'/commit/',r.commitId, '#diff-', SHA2(c.filePath,256), 'R', c.startLine, '-R', c.endLine) AS refactoringDiffLink, c.filePath
+        FROM refactoringgit r2
+        INNER JOIN revisiongit r ON r2.revision = r.id  
+        INNER JOIN projectgit p ON r.project = p.id 
+        INNER JOIN coderangegit c ON c.refactoring = r2.id 
+        WHERE r2.id = $refactoringID AND c.diffSide = 'RIGHT' LIMIT 1";
 
         $projectsInfo = getQueryRows($this->connection, $q);
         $authorEmail = $projectsInfo[0]["authorEmail"];
@@ -460,8 +452,21 @@ class GetEmailTemplateRefactoring extends Parameter {
 
         $projectID = $projectsInfo[0]["projectID"];
         $templateVars["numberOfContributions"] = getCommitRefactoringsCount($this->connection, $projectID, $authorEmail, "");
-
-        $template = json_encode($this->getEmailBody($templateVars));
+        if(isset($_REQUEST["filePath"])) {
+            $filePath = urldecode($_REQUEST["filePath"]);
+            $offset = strrpos($filePath, "/") + 1;
+            $fileExtensionLength = strlen(".java");
+            $filePath = substr($filePath, $offset, strlen($filePath) - $fileExtensionLength - $offset);
+            $template = json_encode($this->getEmailBody($templateVars, "the $filePath test"));
+        } elseif ($projectsInfo[0]["filePath"] != "") {
+            $filePath = $projectsInfo[0]["filePath"];
+            $offset = strrpos($filePath, "/") + 1;
+            $fileExtensionLength = strlen(".java");
+            $filePath = substr($filePath, $offset, strlen($filePath) - $fileExtensionLength - $offset);
+            $template = json_encode($this->getEmailBody($templateVars, "the $filePath test"));
+        } else {
+            $template = json_encode($this->getEmailBody($templateVars));
+        }
 
         echo "{ \"template\": $template }";
     }
