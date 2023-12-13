@@ -369,7 +369,6 @@ class SetTag extends Parameter {
             $q = "DELETE FROM refactoringmotivation 
                     WHERE refactoringmotivation.tag = 
                     (SELECT id FROM tag WHERE tag.label = '$tag')
-                    AND refactoringmotivation.user = $user->userID
                     AND refactoringmotivation.refactoring = $refactoringID";
             echo(updateQuery($this->connection, $q));
         }
