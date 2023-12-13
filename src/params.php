@@ -169,6 +169,11 @@ class Refactorings extends Parameter {
 
         $refactoringRows = $this->getRefactoringRows($this->connection, $projectID, $refactoringID, 'AllRefactorings', $refactoringType, $testRefactoringOnly, $limit, $offset);
         
+        if ($limit || $offset) {
+            $uri = $_SERVER['REQUEST_URI'];
+            $uri = preg_replace("/&offset=$offset/", '', $uri);
+            $refactoringRows["_nextPageURL"] = "http://$_SERVER[HTTP_HOST]$uri&offset=" . ($offset + $limit);
+        }
         echo (json_encode($refactoringRows));
     }
     protected function name() : string {
